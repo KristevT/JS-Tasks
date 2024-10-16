@@ -32,6 +32,7 @@ let eventVariables = {
     jackhammerPicked: false,
     pickaxePicked: false,
     glovesPicked: false,
+    maskPicked: false,
     cartKicked: false,
     gatesButton: false,
     gatesElectricity: false,
@@ -221,10 +222,10 @@ let locations = {
         name: 'Задымленный проход',
         description: [
             'Тесный тоннель в таинственной полупрозрачной дымке.',
-            'Похоже, это единственная дорога, что у тебя есть.'
+            'Похоже, это единственная дорога, что у вас есть.'
         ],
         choices: [
-            { text: '[ пойти вперед       ]', event: 'endingRescued' }, // КОНЦОВКА 2
+            { text: '[ пойти вперед       ]', event: 'endingSmoke' }, // КОНЦОВКА 2 или 4
             { text: '[ вернуться к тупику ]', nextLocation: 'deadendExplosion' },
         ]
     },
@@ -269,7 +270,7 @@ let locations = {
         ],
         choices: [
             { text: '[ разбудить рабочего ]', nextLocation: 'friendUnconscious' },
-            { text: '[ бежать дальше      ]', nextLocation: 'turningBlockage' }
+            { text: '[ бежать дальше      ]', nextLocation: 'turning' }
         ]
     },
     friendUnconscious: {
@@ -320,26 +321,36 @@ let locations = {
             { text: '[ начать битву ]', event: 'battleAmalgam' }
         ]
     },
+    turning: {
+        name: 'Странная развилка',
+        description: [
+            'Вы выходите в комнату с развилкой. Проход впереди завален камнями.',
+            'Дорога налево свободна, однако оттуда доносятся странные шумы.'
+        ],
+        choices: [
+            { text: '[ повернуть налево ]', nextLocation: 'something' },
+            { text: '[ осмотреть завал  ]', nextLocation: 'turningBlockage' }
+        ]
+    },
     turningBlockage: {
-        name: 'Заваленная развилка',
+        name: 'Завал на развилке',
         description: [
-            '???'
+            'Вы осматриваете каменный завал. Он чересчур массивный, чтобы справиться с ним с помощью вашего инструмента.',
+            'Тебе придется вернуться к развилке.'
         ],
         choices: [
-            { text: '[ повернуть налево ]', nextLocation: '???' } // КОНЦОВКА 3 ЧЕТОТАМ
-            // ОТКРЫТЬ ИНВЕНТАРЬ, ВЫБРАТЬ ДИНАМИТ, ВЫЙТИ НА КОНЦОВКУ 4
+            { text: '[ вернуться ]', nextLocation: 'turning' }
         ]
     },
-    turningExploded: {
-        name: 'Освобожденная развилка',
+    something: {
+        name: 'Что-то',
         description: [
-            ''
+            'Разработчик не продумал локацию. Бездарь.'
         ],
         choices: [
-            { text: '[ повернуть налево              ]', nextLocation: '???' },
-            { text: '[ пройти по взорванному тоннелю ]', nextLocation: 'deadendLocked' }
+            { text: '[ вернуться ]', nextLocation: 'turning' }
         ]
-    },
+    }
 };
 
 
@@ -396,9 +407,16 @@ async function handleEvent(event) {
             console.log('Вы подбираете кирку.');
             console.log('* Кирка теперь в слоте [Оружие]');
             player.weapon = weapons.pickaxe;
-            locations.deadendExplosion.description = [
-                'Вы оглядели эту пещеру: слева проход заваленный камнями, справа тоже проход, но заколоченный досками.'
-            ]
+            if ( eventVariables.blockageExploded === false) {
+                locations.deadendExplosion.description = [
+                    'Вы оглядели эту пещеру: слева проход заваленный камнями, справа тоже проход, но заколоченный досками.'
+                ];
+            } else {
+                locations.deadendExplosion.description = [
+                    'Вы оглядели эту пещеру: слева подорванный вами проход, справа тоже проход, но заколоченный досками.'
+                ];
+            }
+
             locations.deadendExplosion.choices = [
                 { text: '[ пройти к завалу ]', event: 'logBlockage' },
                 { text: '[ сломать стену   ]', event: 'breakWall' }
@@ -460,6 +478,14 @@ async function handleEvent(event) {
                 { text: '[ свернуть направо    ]', event: 'locationFriendCheckWater' },
                 { text: '[ осмотреть вагонетку ]', event: 'pickupJackhammer' }
             ];
+            locations.turningBlockage.description = [
+                'Вы осматриваете каменный завал. Он чересчур массивный, чтобы справиться с ним с помощью вашего инструмента.',
+                'Вы вспоминаете про связку динамита, который забрали из ящика.'
+            ],
+            locations.turningBlockage.choices = [
+                { text: '[ заложить динамит ]', event: 'blockageExplosion'},
+                { text: '[ вернуться        ]', nextLocation: 'turning' }
+            ]
             player.location = 'railFork';
             eventVariables.fireSpotted = true;
             break;
@@ -484,6 +510,7 @@ async function handleEvent(event) {
             console.log('* Респиратор был экипирован. Максимальное здоровье повышено');
             player.maxHealth += 30;
             player.health = player.maxHealth;
+            eventVariables.maskPicked = true;
             player.location = 'deadendExplosion';
             break;
 
@@ -567,7 +594,7 @@ async function handleEvent(event) {
             player.location = 'start';
             break;
         case 'locationRailForkFireSpotted':
-            console.log('Ты заглушаешь свое любопытство, жизнь дороже. ')
+            console.log('Вы заглушаете свое любопытство, жизнь дороже. ')
             if (eventVariables.jackhammerPicked === false) {
                 locations.railFork.description = [
                     'Вас встречает развилка. К пожару вы явно больше не пойдете.',
@@ -622,7 +649,7 @@ async function handleEvent(event) {
                 await askQuestion('Нажмите [ENTER] для того чтобы толкнуть вагонетку');
                 let damageDealt = await quickTimeEvent();
                 console.log('\nВдвоем вы толкаете вагонетку.');
-                if (damageDealt === 60) {
+                if (damageDealt === 60 || damageDealt === 30) {
                     perfectPushes++;
                     console.log('Она значительно двинулась дальше.');
                     console.log('(Гоша): Вот та-а-ак, давай ещё так же!');
@@ -637,8 +664,8 @@ async function handleEvent(event) {
             player.location = 'amalgamRoom';
             break;
         case 'breakWall':
-            if (eventVariables.pickaxePicked === false) {
-                console.log('Вы считаете, что кирка лучше справится с уничтожением преграды.')
+            if ( player.weapon === weapons.shovel ) {
+                console.log('Вы считаете, что лопата не справится с уничтожением преграды.')
                 locations.deadendExplosion.description = [
                     'Вы оглядели эту пещеру: слева проход заваленный камнями, справа тоже проход, но заколоченный досками.',
                     'На земле брошена кирка.'
@@ -656,18 +683,57 @@ async function handleEvent(event) {
                     } else {
                         console.log('Преграда полностью разбита, можно идти');
                         eventVariables.wallBroken = true;
-                        locations.deadendExplosion.description = [
-                            'Вы оглядели эту пещеру: слева проход заваленный камнями, справа тоже проход, доски разбиты вдребезги.'
-                        ]
-                        locations.deadendExplosion.choices = [
-                            { text: '[ пройти к завалу             ]', event: 'logBlockage' },
-                            { text: '[ пойти в задымленный тоннель ]', event: 'breakWall' }
-                        ]
+                        if ( eventVariables.blockageExploded === false) {
+                            locations.deadendExplosion.description = [
+                                'Вы оглядели эту пещеру: слева проход заваленный камнями, справа тоже проход, доски разбиты вдребезги.'
+                            ];
+                            locations.deadendExplosion.choices = [
+                                { text: '[ пройти к завалу             ]', event: 'logBlockage' },
+                                { text: '[ пойти в задымленный тоннель ]', event: 'breakWall' }
+                            ];
+                        } else {
+                            locations.deadendExplosion.description = [
+                                'Вы оглядели эту пещеру: слева подорванный вами проход, справа тоже проход, доски разбиты вдребезги.'
+                            ];
+                            locations.deadendExplosion.choices = [
+                                { text: '[ пройти к подорованному проходу ]', event: 'logBlockage' },
+                                { text: '[ пойти в задымленный тоннель    ]', event: 'breakWall' }
+                            ];
+                        }
                     }
                 }
                 player.location = 'smokeTunnel';
                 break;
             }
+            case 'blockageExplosion':
+                if (eventVariables.blockageExploded === false) {
+                    if (player.inventory.includes(items.tnt)) {
+                        console.log('Вы закладываете динамит между грудой булыжников и отбегаете.')
+                        console.log('*взрыв и шум ударяющихся об пол камней*')
+                        console.log('Завал был убран, путь вперед освободился.')
+                        locations.turning.description = [
+                            'Комната с развилкой. Проход спереди пахнет недавно подорванным порохом.',
+                            'Дорога налево свободна, однако оттуда доносятся странные шумы.'
+                        ];
+                        locations.turning.choices = [
+                            { text: '[ повернуть налево ]', nextLocation: 'something' },
+                            { text: '[ пройти вперед ]', nextLocation: 'deadendExplosion' }
+                        ];
+                        locations.deadendExplosion.description = [
+                            'Вы оглядели эту пещеру: слева подорванный вами проход, справа тоже проход, но заколоченный досками.',
+                            'На земле брошена кирка.'
+                        ]
+                        player.inventory = player.inventory.filter(obj => obj !== items.tnt);
+                        eventVariables.blockageExploded = true;
+                        player.location = 'turning';
+                    } else {
+                        console.log('У вас нет предмета для подрыва завала.');
+                    }
+                    break;
+                } else {
+                    player.location = 'deadendExplosion';
+                    break;
+                }
 
         case 'terminalCaptcha':
             function generateMathExample() {
@@ -719,7 +785,7 @@ async function handleEvent(event) {
 
         case 'logBlockage': // НЕБОЛЬШОЙ ТЕКСТ
             if ( eventVariables.blockageExploded === true ) {
-                player.location = 'turningExploded';
+                player.location = 'turning';
             } else {
                 console.log('\nПроход завален, движение невозможно.')
                 if ( eventVariables.pickaxePicked === false ) {
@@ -810,24 +876,30 @@ async function handleEvent(event) {
             }
             endGame('ending1');
             return;
+        case 'endingSmoke':
+            if (eventVariables.maskPicked === true) {
+                handleEvent('endingRescued');
+            } else {
+                handleEvent('endingMolten');
+            }
         case 'endingRescued': // КОНЦОВКА #2
             let descriptionEnding2 = [
-                'Полагаясь на средства защиты, вы начинаете бежать через ядовитый туман.',
+                '\nПолагаясь на средства защиты, вы начинаете бежать через ядовитый туман.',
                 'Вы будто ощущаете тяжесть этой витающей субстанции, что довольно волнующе. Все ближе виден выход.',
                 'Едкий дым пройден, вы попадаете в довольно просторную комнату, освещенную лампами.',
                 'Вы пробежались взглядом по уродливым каменным стенам, трубам, рельсам и..',
                 'Вы встречаете другого шахтера, который похоже так же, как вы, растерянно блуждает по пещерам. Вы его окликаете.',
                 'На несколько секунд он замер. Вы хотели было позвать его снова, но он уже повернулся к вам лицом.',
                 'Хотя точнее сказать тем, что от него осталось. Щеки и подбородок огромными каплями свисали вниз, \nна месте глаз были глубокие ямы. Это нечто плавилось живьем.',
-                'Неуклюже обнажив свои зубы, оно стало двигаться в вашу сторону, пока дрожащие ваши руки брались за лопату.',
+                'Неуклюже обнажив свои зубы, оно стало двигаться в вашу сторону, пока ваши дрожащие руки брались за оружие.',
                 '*ТР-Р-Р-Р*',
-                'Очередь из хлопков, страшным эхом раздавшихся по шахте, оглушила тебя. "Растаявший" шлепнулся на землю.',
-                'Из-за угла выбежал пожарный... с пистолетом-пулеметом. Он живо направил на тебя оружие.',
-                'Вы так же шустро подняли руки вверх. Дежавю. Осмотрев с ног до головы, пожарный взял тебя за шиворот, и начал вести.',
+                'Очередь из хлопков, страшным эхом раздавшихся по шахте, оглушила вас. "Растаявший" шлепнулся на землю.',
+                'Из-за угла выбежал пожарный... с пистолетом-пулеметом. Он живо направил его на вас.',
+                'Вы так же шустро подняли руки вверх. Дежавю. Осмотрев с ног до головы, пожарный взял вас за шиворот, и начал вести.',
                 '(Пожарный): Давай, давай, реще!',
                 'Мимо пробежали еще несколько таких же вооруженных спасателей. До выхода добрались в полной тишине.',
-                'К предприятию приехали машины всех сортов: пожарные, милиция, скорая. Тебя отвели к таким же пострадавшим рабочим.',
-                'Врач начал осматривать тебя, в то время как вы осматривали туда-сюда носящихся спасателей и рабочих. В глазах потемнело.'
+                'К предприятию приехали машины всех сортов: пожарные, милиция, скорая. Вас отвели к таким же пострадавшим рабочим.',
+                'Врач начал осматривать вас, в то время как вы осматривали туда-сюда носящихся спасателей и рабочих. В глазах потемнело.'
             ];
             for (const line of descriptionEnding2) {
                 await askQuestion(line);
@@ -836,7 +908,7 @@ async function handleEvent(event) {
             return;
         case 'endingMolten': // КОНЦОВКА #4
             let descriptionEnding4 = [
-                'Вы идете на свет. В глазах все плывет.',
+                '\nВы идете на свет. В глазах все плывет.',
                 'Жара становится невыносимой, вам кажется, будто мозг вот-вот расплавится',
                 'Вообще-то, так и есть. Ваша кожа начинает таять на глазах',
                 'Вы не успеваете испугаться, как разум тоже угасет.',
@@ -998,7 +1070,7 @@ function endGame(outcome) {
             console.log('Поздравляем! Вы успешно выбрались на поверхность и спасли коллегу!');
             break;
         case 'ending2':
-            console.log('Поздравляем! Вы успешно выбрались на поверхность!.. правда, не совсем целым.');
+            console.log('Поздравляем! Вы успешно выбрались на поверхность!.. хоть и не совсем целым.');
             break;
         case 'ending3':
             console.log('Этой концовки нет...');
