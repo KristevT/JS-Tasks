@@ -40,12 +40,10 @@ let eventVariables = {
     wallBroken: false,
     fireSpotted: false,
     cartPushed: false,
-    locker1Checked: false,    // СУХПАЕК
-    // locker2Checked: false, // КАЛЕНДАРЬ
-    locker3Checked: false,    // РАЦИЯ
-    locker4Checked: false,    // КНОПКИ
-    // locker5Checked: false, // ЗАПЕРТ
-    locker6Checked: false,    // БОРЖОМИ
+    locker1Checked: false,
+    locker3Checked: false,
+    locker4Checked: false,
+    locker6Checked: false,
     blockageExploded: false
 }
 
@@ -329,7 +327,7 @@ let locations = {
             'Дорога налево свободна, однако оттуда доносятся странные шумы.'
         ],
         choices: [
-            { text: '[ повернуть налево ]', nextLocation: 'something' },
+            { text: '[ повернуть налево ]', nextLocation: 'aloneAmalgam' },
             { text: '[ осмотреть завал  ]', nextLocation: 'turningBlockage' }
         ]
     },
@@ -337,19 +335,22 @@ let locations = {
         name: 'Завал на развилке',
         description: [
             'Вы осматриваете каменный завал. Он чересчур массивный, чтобы справиться с ним с помощью вашего инструмента.',
-            'Тебе придется вернуться к развилке.'
+            'Вам придется вернуться к развилке.'
         ],
         choices: [
             { text: '[ вернуться ]', nextLocation: 'turning' }
         ]
     },
-    something: {
-        name: 'Что-то',
+    aloneAmalgam: {
+        name: 'Амальгама',
         description: [
-            'Разработчик не продумал локацию. Бездарь.'
+            'Вы заворачиваете налево и мигом жалеете об этом.',
+            'Источником шума оказалась нежить, похожая на ту, что уже напала на вас ранее, только в двойном, а может и в тройном обьеме.',
+            'Амальгама. Пару-тройку рабочих смешало в одно булькающее и хрипящее нечто.',
+            'Они приближаются, чтобы и вас смешать в этот убогий коктейль. Вы беретесь за свое оружие.'
         ],
         choices: [
-            { text: '[ вернуться ]', nextLocation: 'turning' }
+            { text: '[ начать битву ]', event: 'battleAmalgam' }
         ]
     }
 };
@@ -372,16 +373,11 @@ async function displayDescription(description) {
 }
 
 async function changeLocation(locationName) {
-    // console.log(`Перемещение в: ${locations[locationName].name}`);
-    // await delay(1000);
     player.location = locationName;
     await showLocation();
 }
 
 async function handleEvent(event) {
-    // console.log(`Происходит событие: ${event}`);
-    // await delay(1000);
-
     switch (event) {
         case 'pickupShovel': // ПОЛУЧЕНИЕ ОРУЖИЯ
             console.log('Вы подбираете лопату. Похоже, она изначально принадлежала именно вам.');
@@ -636,7 +632,7 @@ async function handleEvent(event) {
             player.inventory = player.inventory.filter(obj => obj !== items.water);
             player.location = 'cartBlockage';
             break;
-        case 'kickCart':
+        case 'kickCart': // ИВЕНТ С АТАКОЙ (РАЗБЛОКИРОВКА ЛОКАЦИИ)
             while (eventVariables.cartKicked === false) {
                 await askQuestion('Нажмите [ENTER] для нанесения атаки');
                 let damageDealt = await quickTimeEvent();
@@ -726,7 +722,7 @@ async function handleEvent(event) {
                         'Дорога налево свободна, однако оттуда доносятся странные шумы.'
                     ];
                     locations.turning.choices = [
-                        { text: '[ повернуть налево ]', nextLocation: 'something' },
+                        { text: '[ повернуть налево ]', nextLocation: 'aloneAmalgam' },
                         { text: '[ пройти вперед ]', nextLocation: 'deadendExplosion' }
                     ];
                     locations.deadendExplosion.description = [
@@ -745,7 +741,7 @@ async function handleEvent(event) {
                 break;
             }
 
-        case 'terminalCaptcha':
+        case 'terminalCaptcha': // КАПТЧА
             function generateMathExample() {
                 const num1 = Math.floor(Math.random() * 50) + 1;
                 const num2 = Math.floor(Math.random() * 50) + 1;
@@ -886,13 +882,6 @@ async function handleEvent(event) {
             }
             endGame('ending1');
             return;
-        case 'endingSmoke':
-            if (eventVariables.maskPicked === true) {
-                handleEvent('endingRescued');
-            } else {
-                handleEvent('endingMolten');
-            }
-            return;
         case 'endingRescued': // КОНЦОВКА #2
             let descriptionEnding2 = [
                 '\nПолагаясь на средства защиты, вы начинаете бежать через ядовитый туман.',
@@ -916,6 +905,28 @@ async function handleEvent(event) {
                 await askQuestion(line);
             }
             endGame('ending2');
+            return;
+        case 'endingAlone': // КОНЦОВКА #3
+            let descriptionEnding3 = [
+                'Далее вас наконец-то встречает путь к спасению: вы нашли лифт.',
+                'Вы заходите в кабину и начинаете подниматься.',
+                'Постукивания и скрипы лифта сопровождают отдаленные выстрелы и странные глухие визги.',
+                'Вы начинаете ощущать прохладный воздух и потихоньку замечаете свет, исходящий уже не из ослепляющих ламп.',
+                'Вот и выход из шахты. У предприятия творится суматоха.',
+                'Первый заметивший вас милиционнер отводит вас к машинам скорой помощи.',
+                'В завтрашней газете явно будет о чем почитать.'
+            ];
+            for (const line of descriptionEnding3) {
+                await askQuestion(line);
+            }
+            endGame('ending3');
+            return;
+        case 'endingSmoke':
+            if (eventVariables.maskPicked === true) {
+                handleEvent('endingRescued');
+            } else {
+                handleEvent('endingMolten');
+            }
             return;
         case 'endingMolten': // КОНЦОВКА #4
             let descriptionEnding4 = [
@@ -1023,7 +1034,11 @@ async function startBattle(enemy) {
                 enemy.health -= inventoryDamage;
                 if (enemy.health <= 0 && enemy === enemies.amalgam) {   // говнокод конкретно для убийства склееного динамитом
                     console.log('Ошметки этой адской амальгамы разлетаются по сторонам: враг повержен.');
-                    handleEvent('endingFriend');
+                    if (eventVariables.cartPushed === true) {
+                        handleEvent('endingFriend');
+                    } else {
+                        handleEvent('endingAlone');
+                    }
                     return;
                 } 
             }
@@ -1060,8 +1075,12 @@ async function startBattle(enemy) {
                     player.location = 'railFork';
                     break;
                 case enemies.amalgam:
-                    console.log('Склеенный падает на землю, все так же неистово хрипя. Он медленно затихает');
-                    handleEvent('endingFriend')
+                    console.log('Склеенный падает на землю, все так же неистово хрипя. Он медленно затихает.');
+                    if (eventVariables.cartPushed === true) {
+                        handleEvent('endingFriend');
+                    } else {
+                        handleEvent('endingAlone');
+                    }
                     break;
             }
 
@@ -1084,7 +1103,6 @@ async function startBattle(enemy) {
   
  
 async function runSingleQTE(duration, maxMultiplier) {
-    // console.log('Запуск атаки...');
     const startTime = Date.now();
     
     return new Promise(resolve => {
@@ -1113,24 +1131,19 @@ async function runSingleQTE(duration, maxMultiplier) {
             } else if ((0 < progress && progress <= 0.3) || (0.8 <= progress && progress < 1)) {
                 multiplier = 1;
             }
-            // console.log(progress)
-            // console.log(multiplier)
             resolve(player.weapon.damage * multiplier);
         });
     });
 }
   
 async function quickTimeEvent() {
-    // console.log('Вы наносите удар! Нажмите Enter, чтобы остановить шкалу атаки!');
-    return runSingleQTE(2000, 3); // Стандартное оружие с длительностью 2 секунды и множителем от 1 до 3
+    return runSingleQTE(2000, 3);
 }
 
-async function quickTimeEventTriple() {
-    // console.log('Вы атакуете отбойным молотком! Нажмите Enter, чтобы остановить каждую из трех шкал!');
-    
+async function quickTimeEventTriple() {    
     let totalDamage = 0;
     for (let i = 0; i < 3; i++) {
-        totalDamage += await runSingleQTE(800, 2); // 1 секунда и множитель от 1 до 2
+        totalDamage += await runSingleQTE(800, 2);
     }
     
     return totalDamage;
@@ -1140,19 +1153,19 @@ function endGame(outcome) {
     console.log('\n===========================[ Конец игры ]===========================')
     switch (outcome) {
         case 'ending1':
-            console.log('Поздравляем! Вы успешно выбрались на поверхность и спасли коллегу!');
+            console.log('Поздравляем! Вы успешно выбрались на поверхность и спасли коллегу!\n');
             break;
         case 'ending2':
-            console.log('Поздравляем! Вы успешно выбрались на поверхность!.. хоть и не совсем целым.');
+            console.log('Поздравляем! Вы успешно выбрались на поверхность!.. хоть и не совсем целым.\n');
             break;
         case 'ending3':
-            console.log('Этой концовки нет...');
+            console.log('Поздравляем! Вы успешно выбрались на поверхность!\n');
             break;
         case 'ending4':
-            console.log('К сожалению, вам не удалось покинуть шахту.');
+            console.log('К сожалению, вам не удалось покинуть шахту.\n');
             break;
         case 'defeat':
-            console.log('Вы потеряли все здоровье в сражении...');
+            console.log('Вы потеряли все здоровье в сражении...\n');
             break;
     }
     rl.close();
@@ -1166,4 +1179,3 @@ function delay(ms) {
 console.log('Добро пожаловать в игру "Авария в шахте"!');
 console.log('Нажимайте [ENTER] для прочтения диалогов.');
 showLocation();
- 
