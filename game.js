@@ -4,7 +4,7 @@ let player = {
     name: 'Игрок',
     health: 100,
     maxHealth: 100,
-    weapon: {name: 'Кулак', damage: 3, type: 'default' },
+    weapon: {name: 'Кулак', damage: 5, type: 'default' },
     inventory: [],
     location: 'start'
 };
@@ -23,7 +23,7 @@ const items = {
 
 const enemies = {
     bat: { name: 'Летучая Мышь', health: 50, damage: 15 },
-    crawling: { name: 'Ползучий', health: 80, damage: 20 },
+    crawling: { name: 'Ползучий', health: 80, damage: 25 },
     amalgam: { name: 'Склеенный', health: 250, damage: 30 }
 }
 
@@ -34,17 +34,18 @@ let eventVariables = {
     glovesPicked: false,
     maskPicked: false,
     cartKicked: false,
+    buttonsNeeded: false,
     gatesButton: false,
     gatesElectricity: false,
     wallBroken: false,
     fireSpotted: false,
     cartPushed: false,
-    locker1Checked: false,
+    locker1Checked: false,    // СУХПАЕК
     // locker2Checked: false, // КАЛЕНДАРЬ
-    locker3Checked: false,
-    locker4Checked: false,
+    locker3Checked: false,    // РАЦИЯ
+    locker4Checked: false,    // КНОПКИ
     // locker5Checked: false, // ЗАПЕРТ
-    locker6Checked: false,
+    locker6Checked: false,    // БОРЖОМИ
     blockageExploded: false
 }
 
@@ -191,7 +192,7 @@ let locations = {
             'Вы осматриваете его бледный резиновый костюм, огромные черные перчатки и пугающий противогаз.',
             'Только вблизи вы распознали спасателя. Он уводит пушку к земле и активно подзывает вас рукой.',
             '(Спасатель): Нам нужно убираться отсюда, быстрее.',
-            'Вы следуете за ним и вы добираетесь до лифта. Сквозь противогаз он продолжает бормотать:',
+            'Вы следуете за ним и добираетесь до лифта. Сквозь противогаз он продолжает бормотать:',
             '(Спасатель): На комбинате авария, утечка ядовитого газа. Не было контакта с пораженными?',
             '(Вы): С пораженными?..',
             '(Спасатель): Отлично. Когда поднимемся, я проведу тебя к врачам, они удостоверятся, что с тобой все в порядке.',
@@ -541,32 +542,38 @@ async function handleEvent(event) {
                 break;
             }
         case 'locker4':
-            if ( eventVariables.locker4Checked === false ) {
-                console.log('На дне шкафчика стоит чемоданчик со всякой всячиной по типу проводов, рычажков и.. Кнопки! Как раз то, что нужно');
-                console.log('Вы отбираете сразу несколько на вид подходящих кнопок и несете с собой.');
-                console.log('* Кнопки теперь в инвентаре.');
-                eventVariables.gatesButton = true;
-                eventVariables.locker4Checked = true;
-                if ( eventVariables.gatesElectricity === false ) {
-                    locations.gatesPanel.description = [
-                        'Вы подходите к панели с горстью кнопок.',
-                        'Вы приглядываете самую подходящую и крепите её к панели сердитым ударом кулака.',
-                        'Кнопка нажимается, но без эффекта, надо восстановить подачу тока'
-                    ];
-                } else if ( eventVariables.gatesElectricity === true ) {
-                    locations.gatesPanel.description = [
-                        'Вы подходите к панели, теперь видно, что она рабочая.',
-                        'Теперь можно открыть ворота.'
-                    ];
-                    locations.gatesPanel.choices = [
-                        { text: '[ открыть ворота   ]', nextLocation: 'crossroad' },
-                        { text: '[ пойти налево     ]', nextLocation: 'terminalRoom' },
-                        { text: '[ пойти направо    ]', nextLocation: 'lockers' }
-                    ];
+            if ( eventVariables.buttonsNeeded === true ) {
+                if ( eventVariables.locker4Checked === false ) {
+                    console.log('На дне шкафчика стоит чемоданчик со всякой всячиной по типу проводов, рычажков и.. Кнопки! Как раз то, что нужно.');
+                    console.log('Вы отбираете сразу несколько на вид подходящих кнопок и несете с собой.');
+                    console.log('* Кнопки теперь в инвентаре.');
+                    eventVariables.gatesButton = true;
+                    eventVariables.locker4Checked = true;
+                    if ( eventVariables.gatesElectricity === false ) {
+                        locations.gatesPanel.description = [
+                            'Вы подходите к панели с горстью кнопок.',
+                            'Вы приглядываете самую подходящую и крепите её к панели сердитым ударом кулака.',
+                            'Кнопка нажимается, но без эффекта, надо восстановить подачу тока'
+                        ];
+                    } else if ( eventVariables.gatesElectricity === true ) {
+                        locations.gatesPanel.description = [
+                            'Вы подходите к панели, теперь видно, что она рабочая.',
+                            'Теперь можно открыть ворота.'
+                        ];
+                        locations.gatesPanel.choices = [
+                            { text: '[ открыть ворота   ]', nextLocation: 'crossroad' },
+                            { text: '[ пойти налево     ]', nextLocation: 'terminalRoom' },
+                            { text: '[ пойти направо    ]', nextLocation: 'lockers' }
+                        ];
+                    }
+                    break;
+                } else {
+                    console.log('На дне шкафчика стоит чемоданчик со всякой всячиной. Вы уже взяли то, что нужно.');
+                    break;
                 }
-                break;
             } else {
-                console.log('На дне шкафчика стоит чемоданчик со всякой всячиной. Вы уже взяли то, что нужно.');
+                console.log('На дне шкафчика стоит чемоданчик со всякой всячиной по типу рычажков и проводов.');
+                console.log('Вы не уверены, нужно ли вам что-то из этого.');
                 break;
             }
         case 'locker5':
@@ -594,7 +601,7 @@ async function handleEvent(event) {
             player.location = 'start';
             break;
         case 'locationRailForkFireSpotted':
-            console.log('Вы заглушаете свое любопытство, жизнь дороже. ')
+            console.log('\nВы заглушаете свое любопытство, жизнь дороже. ')
             if (eventVariables.jackhammerPicked === false) {
                 locations.railFork.description = [
                     'Вас встречает развилка. К пожару вы явно больше не пойдете.',
@@ -646,26 +653,29 @@ async function handleEvent(event) {
         case 'pushCart':
             let perfectPushes = 0;
             while (perfectPushes < 3) {
-                await askQuestion('Нажмите [ENTER] для того чтобы толкнуть вагонетку');
+                await askQuestion('\nНажмите [ENTER] для того чтобы толкнуть вагонетку');
                 let damageDealt = await quickTimeEvent();
                 console.log('\nВдвоем вы толкаете вагонетку.');
                 if (damageDealt === 60 || damageDealt === 30) {
                     perfectPushes++;
-                    console.log('Она значительно двинулась дальше.');
-                    console.log('(Гоша): Вот та-а-ак, давай ещё так же!');
+                    if ( perfectPushes < 3) {
+                        console.log('Она значительно двинулась дальше.');
+                        console.log('(Гоша): Вот та-а-ак, давай ещё так же!');
+                    } else {
+                        console.log('Вагонетка перевернулась и освободила тоннель.');
+                        console.log('Ай молодца, Борька, идем дальше.');
+                    }
                 } else {
                     console.log('Она неряшливо качнулась.');
                     console.log('(Гоша): Боря-я-я, давай соберись, еще раз!');
                 }
             }
-            console.log('Вагонетка перевернулась и освободила тоннель.');
-            console.log('Ай молодца, Борька, идем дальше.');
             eventVariables.cartKicked = true;
             player.location = 'amalgamRoom';
             break;
         case 'breakWall':
             if ( player.weapon === weapons.shovel ) {
-                console.log('Вы считаете, что лопата не справится с уничтожением преграды.')
+                console.log('\nВы считаете, что лопата не справится с уничтожением преграды.')
                 locations.deadendExplosion.description = [
                     'Вы оглядели эту пещеру: слева проход заваленный камнями, справа тоже проход, но заколоченный досками.',
                     'На земле брошена кирка.'
@@ -681,7 +691,7 @@ async function handleEvent(event) {
                     if (wallHealth > 0) {
                         console.log(`Вы разбили ${~~(damageDealt/2)}% досок, осталось еще ${~~(wallHealth/2)}%.`);
                     } else {
-                        console.log('Преграда полностью разбита, можно идти');
+                        console.log('Преграда полностью разбита, можно идти.');
                         eventVariables.wallBroken = true;
                         if ( eventVariables.blockageExploded === false) {
                             locations.deadendExplosion.description = [
@@ -705,35 +715,35 @@ async function handleEvent(event) {
                 player.location = 'smokeTunnel';
                 break;
             }
-            case 'blockageExplosion':
-                if (eventVariables.blockageExploded === false) {
-                    if (player.inventory.includes(items.tnt)) {
-                        console.log('Вы закладываете динамит между грудой булыжников и отбегаете.')
-                        console.log('*взрыв и шум ударяющихся об пол камней*')
-                        console.log('Завал был убран, путь вперед освободился.')
-                        locations.turning.description = [
-                            'Комната с развилкой. Проход спереди пахнет недавно подорванным порохом.',
-                            'Дорога налево свободна, однако оттуда доносятся странные шумы.'
-                        ];
-                        locations.turning.choices = [
-                            { text: '[ повернуть налево ]', nextLocation: 'something' },
-                            { text: '[ пройти вперед ]', nextLocation: 'deadendExplosion' }
-                        ];
-                        locations.deadendExplosion.description = [
-                            'Вы оглядели эту пещеру: слева подорванный вами проход, справа тоже проход, но заколоченный досками.',
-                            'На земле брошена кирка.'
-                        ]
-                        player.inventory = player.inventory.filter(obj => obj !== items.tnt);
-                        eventVariables.blockageExploded = true;
-                        player.location = 'turning';
-                    } else {
-                        console.log('У вас нет предмета для подрыва завала.');
-                    }
-                    break;
+        case 'blockageExplosion':
+            if (eventVariables.blockageExploded === false) {
+                if (player.inventory.includes(items.tnt)) {
+                    console.log('\nВы закладываете динамит между грудой булыжников и отбегаете.')
+                    console.log('*взрыв и шум ударяющихся об пол камней*')
+                    console.log('Завал был убран, путь вперед освободился.')
+                    locations.turning.description = [
+                        'Комната с развилкой. Проход спереди пахнет недавно подорванным порохом.',
+                        'Дорога налево свободна, однако оттуда доносятся странные шумы.'
+                    ];
+                    locations.turning.choices = [
+                        { text: '[ повернуть налево ]', nextLocation: 'something' },
+                        { text: '[ пройти вперед ]', nextLocation: 'deadendExplosion' }
+                    ];
+                    locations.deadendExplosion.description = [
+                        'Вы оглядели эту пещеру: слева подорванный вами проход, справа тоже проход, но заколоченный досками.',
+                        'На земле брошена кирка.'
+                    ]
+                    player.inventory = player.inventory.filter(obj => obj !== items.tnt);
+                    eventVariables.blockageExploded = true;
+                    player.location = 'turning';
                 } else {
-                    player.location = 'deadendExplosion';
-                    break;
+                    console.log('У вас нет предмета для подрыва завала.');
                 }
+                break;
+            } else {
+                player.location = 'deadendExplosion';
+                break;
+            }
 
         case 'terminalCaptcha':
             function generateMathExample() {
@@ -825,11 +835,11 @@ async function handleEvent(event) {
                 if ( eventVariables.gatesButton === false ) {
                     locations.gatesPanel.description = [
                         'Вы подходите к панели и осматриваете её.',
-                        'Кнопки теперь тускло подсвечиваются, но нужной вам все ещё нет на месте, где-то надо найти замену.'
+                        'Кнопки теперь тускло подсвечиваются, но той, что с надписью "Открыть", нет на месте, где-то надо найти замену.'
                     ];
                 } else if ( eventVariables.gatesButton === true ) {
                     locations.gatesPanel.description = [
-                        'Вы подходите к панели, теперь видно, что она рабочая.',
+                        'Вы подходите к панели, сейчас видно, что она рабочая.',
                         'Теперь можно открыть ворота.'
                     ];
                     locations.gatesPanel.choices = [
@@ -861,7 +871,7 @@ async function handleEvent(event) {
 
         case 'endingFriend': // КОНЦОВКА #1
             let descriptionEnding1 = [
-                '(Гоша): Марка жалко...',
+                '(Гоша): Хана Марку. Марк был хороший...',
                 'С вашей помощью Гоша освобождает ногу из заключения рельс.',
                 'Вы вместе проходите в лифт и поднимаетесь наверх.',
                 'За несколько минут вы успеваете обменяться несколькими шутками и историями из жизни.',
@@ -882,6 +892,7 @@ async function handleEvent(event) {
             } else {
                 handleEvent('endingMolten');
             }
+            return;
         case 'endingRescued': // КОНЦОВКА #2
             let descriptionEnding2 = [
                 '\nПолагаясь на средства защиты, вы начинаете бежать через ядовитый туман.',
@@ -909,10 +920,11 @@ async function handleEvent(event) {
         case 'endingMolten': // КОНЦОВКА #4
             let descriptionEnding4 = [
                 '\nВы идете на свет. В глазах все плывет.',
-                'Жара становится невыносимой, вам кажется, будто мозг вот-вот расплавится',
-                'Вообще-то, так и есть. Ваша кожа начинает таять на глазах',
-                'Вы не успеваете испугаться, как разум тоже угасет.',
-                'Вас больше нет, осталась бесформенная масса, которая все равно продолжит идти на свет\nпо своим примитивным инстинктам. Ваш же путь подошел к концу.'
+                'Жара становится невыносимой, вам кажется, будто мозг вот-вот расплавится.',
+                'Вообще-то, так и есть. Ваша кожа начинает таять на глазах.',
+                'Вы не успеваете испугаться, как разум тоже угасает.',
+                'Вас больше нет, осталась бесформенная масса, которая все равно продолжит идти на свет по своим примитивным инстинктам.',
+                'Ваш же путь подошел к концу.'
             ];
             for (const line of descriptionEnding4) {
                 await askQuestion(line);
@@ -927,10 +939,13 @@ async function handleEvent(event) {
 
 async function showLocation() {
     const location = locations[player.location];
-    // console.log(`\n=== ${location.name} ===`);
     console.log('');
     await displayDescription(location.description);
-    // console.log('Выберите действие:');
+
+    // конкретно для штучки с панелью
+    if (player.location === 'gatesPanel') {
+        eventVariables.buttonsNeeded = true;
+    }
   
     location.choices.forEach((choice, index) => {
         console.log(`${index + 1} - ${choice.text}`);
@@ -951,6 +966,48 @@ async function showLocation() {
     }
 }
 
+
+async function useInventory() {
+    let inventoryDamage = 0;
+    if (player.inventory.length === 0) {
+        console.log('\nВаш инвентарь пуст.');
+    } else {
+        console.log("\nВаш инвентарь:");
+        const longestName = player.inventory.reduce((maxLength, currentItem) => {
+            return Math.max(maxLength, currentItem.name.length);
+        }, 0);
+        player.inventory.forEach((item, index) => {
+            let itemDesc;
+            if (item.type === 'food') {
+                itemDesc = `+${item.value} HP`;
+            } else if (item.type === 'weapon') {
+                itemDesc = `${item.value} ATK`;
+            }
+
+            console.log(`${index + 1} - [ ${item.name}${' '.repeat(longestName - item.name.length)} | ${itemDesc} ]`);
+        });
+        console.log(`${player.inventory.length + 1} - [ выйти из инвентаря ]`);
+
+        const choice = parseInt(await askQuestion("\nВведите номер предмета, который хотите использовать: "));
+        if (choice <= player.inventory.length && choice > 0) {
+            const selectedItem = player.inventory[choice - 1];
+            if (selectedItem.type === 'food') {
+                player.health = Math.min(player.health + selectedItem.value, player.maxHealth);
+                console.log(`Вы использовали [${selectedItem.name}] и восстановили ${selectedItem.value} здоровья.`);
+                console.log(`Ваше текущее здоровье: ${player.health}.`);
+            } else if (selectedItem.type === 'weapon') {
+                inventoryDamage = selectedItem.value;
+                console.log(`Вы используете ${selectedItem.name} и наносите ${selectedItem.value} урона врагу!`);
+            }
+            player.inventory.splice(choice - 1, 1);
+        } else {
+            console.log("Вы закрыли инвентарь.")
+        }
+    }
+    return inventoryDamage;
+}
+
+
 async function startBattle(enemy) {
     console.log(`Начинается битва с: ${enemy.name}`);
   
@@ -958,20 +1015,36 @@ async function startBattle(enemy) {
         console.log(`\nВаше здоровье: ${player.health}`);
         console.log(`Здоровье врага: ${enemy.health}`);
   
-        await askQuestion('Нажмите [ENTER] для нанесения атаки');
+        const action = await askQuestion('Нажмите [ENTER] для атаки или [E] для использования инвентаря: ');
+        
+        if (action.toLowerCase() === 'e') {
+            const inventoryDamage = await useInventory();
+            if (inventoryDamage > 0) {
+                enemy.health -= inventoryDamage;
+                if (enemy.health <= 0 && enemy === enemies.amalgam) {   // говнокод конкретно для убийства склееного динамитом
+                    console.log('Ошметки этой адской амальгамы разлетаются по сторонам: враг повержен.');
+                    handleEvent('endingFriend');
+                    return;
+                } 
+            }
+            
+            await askQuestion('Инвентарь использован. Нажмите [ENTER] для атаки');
+        }
+
         let damageDealt;
         if (player.weapon.type === 'triple') {
             damageDealt = await quickTimeEventTriple();
         } else {
             damageDealt = await quickTimeEvent();
         }
-        
-        if (damageDealt === 0) {
-            console.log('Вы промахиваетесь...')
+
+        if (damageDealt <= 3) {
+            console.log('Вы промахиваетесь...');
         } else {
             console.log(`Вы наносите ${damageDealt} урона!`);
+            enemy.health -= damageDealt;
         }
-        enemy.health -= damageDealt;
+        
   
         if (enemy.health <= 0) {
             console.log(`Вы победили ${enemy.name}!`);
@@ -1005,13 +1078,13 @@ async function startBattle(enemy) {
             return;
         }
   
-        await delay(1000);
+        await delay(200);
     }
 }
   
  
 async function runSingleQTE(duration, maxMultiplier) {
-    console.log('Запуск атаки...');
+    // console.log('Запуск атаки...');
     const startTime = Date.now();
     
     return new Promise(resolve => {
@@ -1048,12 +1121,12 @@ async function runSingleQTE(duration, maxMultiplier) {
 }
   
 async function quickTimeEvent() {
-    console.log('Вы наносите удар! Нажмите Enter, чтобы остановить шкалу атаки!');
+    // console.log('Вы наносите удар! Нажмите Enter, чтобы остановить шкалу атаки!');
     return runSingleQTE(2000, 3); // Стандартное оружие с длительностью 2 секунды и множителем от 1 до 3
 }
 
 async function quickTimeEventTriple() {
-    console.log('Вы атакуете отбойным молотком! Нажмите Enter, чтобы остановить каждую из трех шкал!');
+    // console.log('Вы атакуете отбойным молотком! Нажмите Enter, чтобы остановить каждую из трех шкал!');
     
     let totalDamage = 0;
     for (let i = 0; i < 3; i++) {
@@ -1064,7 +1137,7 @@ async function quickTimeEventTriple() {
 }
 
 function endGame(outcome) {
-    console.log('\n===========================')
+    console.log('\n===========================[ Конец игры ]===========================')
     switch (outcome) {
         case 'ending1':
             console.log('Поздравляем! Вы успешно выбрались на поверхность и спасли коллегу!');
@@ -1076,13 +1149,14 @@ function endGame(outcome) {
             console.log('Этой концовки нет...');
             break;
         case 'ending4':
-            console.log('Вам не удалось покинуть шахту.');
+            console.log('К сожалению, вам не удалось покинуть шахту.');
             break;
         case 'defeat':
-            console.log('Вы потеряли все здоровье. Путешествие окончено.');
+            console.log('Вы потеряли все здоровье в сражении...');
             break;
     }
     rl.close();
+    process.exit();
 }
 
 function delay(ms) {
