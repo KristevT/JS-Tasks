@@ -73,7 +73,7 @@ let locations = {
         description: [
             'Вы начинаете идти вглубь пещеры, путь помечает дорожка из рельс.',
             'Настораживает то, что потолок постепенно уходит вниз.',
-            'С продвижением вглубь прохода. Вдали что-то виднеется: свет в конце тоннеля.',
+            'С продвижением вглубь прохода, вдали что-то виднеется: свет в конце тоннеля.',
             'Это отражение вашего фонаря об поверхность железной вагонетки, которую завалило булыжниками, путь прегражден.',
             'Вам понадобится что-то, чем можно подтолкнуть вагонетку, придется вернуться за лопатой.'
         ],
@@ -380,7 +380,7 @@ async function changeLocation(locationName) {
 async function handleEvent(event) {
     switch (event) {
         case 'pickupShovel': // ПОЛУЧЕНИЕ ОРУЖИЯ
-            console.log('Вы подбираете лопату. Похоже, она изначально принадлежала именно вам.');
+            console.log('\nВы подбираете лопату. Похоже, она изначально принадлежала именно вам.');
             console.log('* Лопата теперь в слоте [Оружие]');
             player.weapon = weapons.shovel;
             locations.start.description = [
@@ -392,7 +392,7 @@ async function handleEvent(event) {
             locations.tunnelBlocked.description = [
                 'Вы начинаете идти вглубь пещеры, путь помечает дорожка из рельс.',
                 'Настораживает то, что потолок постепенно уходит вниз.',
-                'С продвижением вглубь прохода. Вдали что-то виднеется: свет в конце тоннеля.',
+                'С продвижением вглубь прохода, вдали что-то виднеется: свет в конце тоннеля.',
                 'Это отражение вашего фонаря об поверхность железной вагонетки, которую завалило булыжниками, путь прегражден.',
                 'Вы можете использовать лопату, чтобы подтолкнуть вагонетку.'
             ];
@@ -401,7 +401,7 @@ async function handleEvent(event) {
             ];
             break;
         case 'pickupPickaxe':
-            console.log('Вы подбираете кирку.');
+            console.log('\nВы подбираете кирку.');
             console.log('* Кирка теперь в слоте [Оружие]');
             player.weapon = weapons.pickaxe;
             if ( eventVariables.blockageExploded === false) {
@@ -422,7 +422,7 @@ async function handleEvent(event) {
             break;
         case 'pickupJackhammer':
             if ( eventVariables.jackhammerPicked === false ) {
-                console.log('Кто-то оставил в вагонетке отбойный молоток. Пожалуй, вам он будет нужнее.');
+                console.log('\nКто-то оставил в вагонетке отбойный молоток. Пожалуй, вам он будет нужнее.');
                 console.log('* Отбойный молоток теперь в слоте [Оружие]');
                 player.weapon = weapons.jackhammer;
                 eventVariables.jackhammerPicked = true;
@@ -450,12 +450,12 @@ async function handleEvent(event) {
                 }
                 break;
             } else {
-                console.log('Вагонетка заполнена серо-бурыми минералами.');
+                console.log('\nВагонетка заполнена серо-бурыми минералами.');
                 console.log('Ваши профессиональные знания подсказывают, что это железистый кварцит.');
                 break;
             }
         case 'pickupTNT': // ДОБАВЛЕНИЕ В ИНВЕНТАРЬ
-            console.log('Там лежит связка динамита. Вы быстро хватаете ее и возвращаетесь к повороту.');
+            console.log('\nТам лежит связка динамита. Вы быстро хватаете ее и возвращаетесь к повороту.');
             console.log('* Динамит теперь в инвентаре. Вы можете использовать его в бою, как одноразовый предмет');
             player.inventory.push(items.tnt);
             if (eventVariables.jackhammerPicked === false) {
@@ -489,7 +489,7 @@ async function handleEvent(event) {
         
         case 'pickupGloves': // ЭКИПИРОВКА ОДЕЖДЫ (+К МАКСИМАЛЬНОМУ ЗДОРОВЬЮ)
             if ( eventVariables.glovesPicked === false ) {
-                console.log('Перед тем как покинуть терминал, ваш взгляд упал на пару рабочих перчаток.');
+                console.log('\nПеред тем как покинуть терминал, ваш взгляд упал на пару рабочих перчаток.');
                 console.log('Вы их надеваете. Честно говоря, ваши измазанные углем руки уже поздно спасать.');
                 console.log('* Перчатки были экипированы. Максимальное здоровье повышено');
                 player.maxHealth += 20;
@@ -498,12 +498,12 @@ async function handleEvent(event) {
                 eventVariables.glovesPicked = true;
                 break;
             } else {
-                console.log('Вы покидаете терминал.');
+                console.log('\nВы покидаете терминал.');
                 player.location = 'gates';
                 break;
             }
         case 'pickupMask':
-            console.log('Спасатель протягивает балаклаву и респиратор. На теле не осталось ни одного открытого местечка.');
+            console.log('\nСпасатель протягивает балаклаву и респиратор. На теле не осталось ни одного открытого местечка.');
             console.log('* Респиратор был экипирован. Максимальное здоровье повышено');
             player.maxHealth += 30;
             player.health = player.maxHealth;
@@ -513,34 +513,34 @@ async function handleEvent(event) {
 
         case 'locker1': // ШКАФЧИКИ
             if ( eventVariables.locker1Checked === false ) {
-                console.log('На полке лежит замотанный в газету паек из хлеба, колбасы и печенья - тормозок. Пустой желудок сразу дал о себе знать.');
+                console.log('\nНа полке лежит замотанный в газету паек из хлеба, колбасы и печенья - тормозок. Пустой желудок сразу дал о себе знать.');
                 console.log('* Сухпаек теперь в инвентаре. Вы можете использовать его в бою, как одноразовый предмет');
                 player.inventory.push(items.meal);
                 eventVariables.locker1Checked = true;
                 break;
             } else {
-                console.log('Шкафчик пуст.');
+                console.log('\nШкафчик пуст.');
                 break;
             }
         case 'locker2':
-            console.log('На стенке шкафчика висит выцветший календарь. Бледными красно-черными буквами написано:');
+            console.log('\nНа стенке шкафчика висит выцветший календарь. Бледными красно-черными буквами написано:');
             console.log('Понедельник, 5 октября, 1992. Веселое начало недели.');
             break;
         case 'locker3':
             if ( eventVariables.locker3Checked === false ) {
-                console.log('Из шкафчика доносится странный шум. Вы открываете дверцу и видите на полке рацию. Среди помех что-то слышно:');
+                console.log('\nИз шкафчика доносится странный шум. Вы открываете дверцу и видите на полке рацию. Среди помех что-то слышно:');
                 console.log('## ПРИ КОНТАКЕ ##### УСТРАНИТЬ #####');
                 console.log('Рация затихает, сели батарейки. Жуть.');
                 eventVariables.locker3Checked = true;
                 break;
             } else {
-                console.log('На полке лежит разряженная рация. Шум больше не доносится.');
+                console.log('\nНа полке лежит разряженная рация. Шум больше не доносится.');
                 break;
             }
         case 'locker4':
             if ( eventVariables.buttonsNeeded === true ) {
                 if ( eventVariables.locker4Checked === false ) {
-                    console.log('На дне шкафчика стоит чемоданчик со всякой всячиной по типу проводов, рычажков и.. Кнопки! Как раз то, что нужно.');
+                    console.log('\nНа дне шкафчика стоит чемоданчик со всякой всячиной по типу проводов, рычажков и.. Кнопки! Как раз то, что нужно.');
                     console.log('Вы отбираете сразу несколько на вид подходящих кнопок и несете с собой.');
                     console.log('* Кнопки теперь в инвентаре.');
                     eventVariables.gatesButton = true;
@@ -549,7 +549,7 @@ async function handleEvent(event) {
                         locations.gatesPanel.description = [
                             'Вы подходите к панели с горстью кнопок.',
                             'Вы приглядываете самую подходящую и крепите её к панели сердитым ударом кулака.',
-                            'Кнопка нажимается, но без эффекта, надо восстановить подачу тока'
+                            'Кнопка нажимается, но без эффекта, надо восстановить подачу тока.'
                         ];
                     } else if ( eventVariables.gatesElectricity === true ) {
                         locations.gatesPanel.description = [
@@ -564,26 +564,26 @@ async function handleEvent(event) {
                     }
                     break;
                 } else {
-                    console.log('На дне шкафчика стоит чемоданчик со всякой всячиной. Вы уже взяли то, что нужно.');
+                    console.log('\nНа дне шкафчика стоит чемоданчик со всякой всячиной. Вы уже взяли то, что нужно.');
                     break;
                 }
             } else {
-                console.log('На дне шкафчика стоит чемоданчик со всякой всячиной по типу рычажков и проводов.');
+                console.log('\nНа дне шкафчика стоит чемоданчик со всякой всячиной по типу рычажков и проводов.');
                 console.log('Вы не уверены, нужно ли вам что-то из этого.');
                 break;
             }
         case 'locker5':
-            console.log('Шкафчик наглухо заперт.');
+            console.log('\nШкафчик наглухо заперт.');
             break;
         case 'locker6':
             if ( eventVariables.locker6Checked === false ) {
-                console.log('На полке стоит бутылка минеральной воды. Вы сразу узнали бело-красную этикетку "Боржоми".');
+                console.log('\nНа полке стоит бутылка минеральной воды. Вы сразу узнали бело-красную этикетку "Боржоми".');
                 console.log('* Вода теперь в инвентаре. Вы можете использовать ее в бою, как одноразовый предмет');
                 player.inventory.push(items.water);
                 eventVariables.locker6Checked = true;
                 break;
             } else {
-                console.log('Шкафчик пуст.');
+                console.log('\nШкафчик пуст.');
                 break;
             }
 
@@ -666,7 +666,7 @@ async function handleEvent(event) {
                     console.log('(Гоша): Боря-я-я, давай соберись, еще раз!');
                 }
             }
-            eventVariables.cartKicked = true;
+            eventVariables.cartPushed = true;
             player.location = 'amalgamRoom';
             break;
         case 'breakWall':
@@ -683,7 +683,7 @@ async function handleEvent(event) {
                     await askQuestion('Нажмите [ENTER] для нанесения атаки');
                     let damageDealt = await quickTimeEvent();
                     wallHealth -= damageDealt;
-                    console.log('\nВы наносите удар по заколоченным доскам.');
+                    console.log('Вы наносите удар по заколоченным доскам.');
                     if (wallHealth > 0) {
                         console.log(`Вы разбили ${~~(damageDealt/2)}% досок, осталось еще ${~~(wallHealth/2)}%.`);
                     } else {
@@ -1033,7 +1033,7 @@ async function startBattle(enemy) {
             if (inventoryDamage > 0) {
                 enemy.health -= inventoryDamage;
                 if (enemy.health <= 0 && enemy === enemies.amalgam) {   // говнокод конкретно для убийства склееного динамитом
-                    console.log('Ошметки этой адской амальгамы разлетаются по сторонам: враг повержен.');
+                    console.log('Ошметки этой адской амальгамы салютом разлетаются по сторонам: враг повержен.');
                     if (eventVariables.cartPushed === true) {
                         handleEvent('endingFriend');
                     } else {
